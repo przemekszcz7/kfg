@@ -1,0 +1,6 @@
+{
+  "name": "KFG Property Group",
+  "description": "Luxury real estate website in Stargard Szczeciński.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
