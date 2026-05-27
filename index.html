@@ -59,11 +59,23 @@
 
     body {
       overflow-x: hidden;
-      /* Dynamic low-opacity golden architectural grid pattern */
+      position: relative;
+    }
+
+    /* GPU-accelerated static architectural grid layer to avoid background repaint lag on scroll */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
       background-image: 
         linear-gradient(to right, rgba(197, 156, 71, 0.015) 1px, transparent 1px);
       background-size: calc((100vw - 8vw) / 4) 100%;
       background-position: 4vw 0;
+      transform: translate3d(0, 0, 0);
+      will-change: transform;
+      backface-visibility: hidden;
     }
 
     ::selection {
@@ -185,14 +197,15 @@
     --------------------------------------------------------------*/
     .reveal-el {
       opacity: 0;
-      transform: translateY(36px);
+      transform: translate3d(0, 36px, 0);
       will-change: opacity, transform;
       transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      backface-visibility: hidden;
     }
 
     .reveal-el.revealed {
       opacity: 1;
-      transform: translateY(0);
+      transform: translate3d(0, 0, 0);
     }
 
     /*--------------------------------------------------------------
@@ -563,7 +576,10 @@
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(197, 156, 71, 0.02);
-      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform, border-color, box-shadow;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
       position: relative;
     }
 
@@ -646,7 +662,10 @@
       padding: 44px 48px;
       border-top: 1px solid var(--c-gold-line);
       background-color: transparent;
-      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: padding-left 0.5s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: padding-left, background-color, border-color, box-shadow;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
       cursor: pointer;
       position: relative;
     }
@@ -966,7 +985,10 @@
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(197, 156, 71, 0.01);
-      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: border-color 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: border-color, box-shadow;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
       border-radius: 0px;
     }
 
@@ -1837,13 +1859,18 @@
 
       // Navbar scroll listener
       const siteNav = document.getElementById('site-nav');
+      let isSiteScrolled = false;
       window.addEventListener('scroll', () => {
-        if (window.scrollY > 80) {
-          siteNav.classList.add('scrolled');
-        } else {
-          siteNav.classList.remove('scrolled');
+        const currentScrolled = window.scrollY > 80;
+        if (currentScrolled !== isSiteScrolled) {
+          isSiteScrolled = currentScrolled;
+          if (isSiteScrolled) {
+            siteNav.classList.add('scrolled');
+          } else {
+            siteNav.classList.remove('scrolled');
+          }
         }
-      });
+      }, { passive: true });
 
       // Mobile Hamburger Navigation Overlay
       const hamburger = document.getElementById('mobile-hamburger');
